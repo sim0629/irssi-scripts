@@ -21,6 +21,24 @@ $dbh->do("CREATE TABLE sgm (
     ,delta INTEGER
 )");
 
+my $sth = $dbh->prepare("INSERT INTO sgm (
+     number
+    ,name
+    ,level
+    ,score
+    ,fullcombo
+    ,rank
+    ,delta
+) VALUES (
+     ?
+    ,?
+    ,?
+    ,?
+    ,?
+    ,?
+    ,?
+)");
+
 my $request = HTTP::Request->new(GET => 'http://saucer.isdev.kr/sgm/all-default');
 my $ua = LWP::UserAgent->new;
 $ua->agent('Mozilla/5.0');
@@ -57,9 +75,16 @@ if ($response->is_success) {
                 $delta = $1;
             }
 
+            $sth->execute(
+                 $number
+                ,$name
+                ,$level
+                ,$score
+                ,$fullcombo
+                ,$rank
+                ,$delta
+            );
         }
-
-        last;
     }
 }
  
