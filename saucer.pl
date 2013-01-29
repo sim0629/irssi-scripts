@@ -125,7 +125,7 @@ sub event_privmsg {
     my ($target, $text) = split(/ :/, $data, 2);
     return if $target !~ /^#neria$/i;
 
-    return if $text !~ /\!(((\w+)\,)*((\w+) ))(select.+)$/i;
+    return if $text !~ /\!(((\w+)\,)*((\w+) ))(\s*select.+)$/i;
     my @users = split(/\,/, $1);
     my $command = $+;
 
