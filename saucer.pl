@@ -93,9 +93,8 @@ sub execute {
 
     my $select = $dbh->prepare($command);
     $select->execute();
-    $select->bind_columns(\$result);
-    while($select->fetch()) {
-        return $result;
+    while(my (@result) = $select->fetchrow_array()) {
+        return join(', ', @result);
     }
 }
 
