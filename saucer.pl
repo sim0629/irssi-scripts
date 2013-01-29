@@ -3,47 +3,44 @@ use HTTP::Request;
 use LWP::UserAgent;
 use Mojo::DOM;
 
-my $dbh = DBI->connect(
-    "dbi:SQLite:dbname=:memory:", "", "",
-    {
-        RaiseError => 1,
-        sqlite_unicode => 1,
-    }
-);
+sub fetch {
+    my ($dbh, $user) = @_;
 
-$dbh->do("CREATE TABLE sgm (
-     number INTEGER
-    ,name TEXT
-    ,level INTEGER
-    ,score INTEGER
-    ,fullcombo INTEGER
-    ,rank INTEGER
-    ,delta INTEGER
-)");
+    my $safe_user = $dbh->quote_identifier($user);
 
-my $sth = $dbh->prepare("INSERT INTO sgm (
-     number
-    ,name
-    ,level
-    ,score
-    ,fullcombo
-    ,rank
-    ,delta
-) VALUES (
-     ?
-    ,?
-    ,?
-    ,?
-    ,?
-    ,?
-    ,?
-)");
+    $dbh->do("CREATE TABLE ${safe_user} (
+         number INTEGER
+        ,name TEXT
+        ,level INTEGER
+        ,score INTEGER
+        ,fullcombo INTEGER
+        ,rank INTEGER
+        ,delta INTEGER
+    )");
 
-my $request = HTTP::Request->new(GET => 'http://saucer.isdev.kr/sgm/all-default');
-my $ua = LWP::UserAgent->new;
-$ua->agent('Mozilla/5.0');
-my $response = $ua->request($request);
-if ($response->is_success) {
+    my $sth = $dbh->prepare("INSERT INTO ${safe_user} (
+         number
+        ,name
+        ,level
+        ,score
+        ,fullcombo
+        ,rank
+        ,delta
+    ) VALUES (
+         ?
+        ,?
+        ,?
+        ,?
+        ,?
+        ,?
+        ,?
+    )");
+
+    my $request = HTTP::Request->new(GET => "http://saucer.isdev.kr/${user}/all-default");
+    my $ua = LWP::UserAgent->new;
+    $ua->agent('Mozilla/5.0');
+    my $response = $ua->request($request);
+    return if (!$response->is_success);
     my $string = $response->decoded_content;
     my $dom = Mojo::DOM->new;
     $dom->parse($string);
@@ -88,11 +85,33 @@ if ($response->is_success) {
     }
 }
 
-$select = $dbh->prepare("SELECT COUNT(*) AS RESULT FROM sgm WHERE score >= 1000000");
-$select->execute();
-$select->bind_columns(\$result);
-while($select->fetch()) {
-    print $result;
+sub execute {
+    my ($dbh, $command) = @_;
+
+    $select = $dbh->prepare($command);
+    $select->execute();
+    $select->bind_columns(\$result);
+    while($select->fetch()) {
+        print $result;
+    }
 }
 
-$dbh->disconnect();
+sub main {
+    my $user = 'sgm';
+    my $command = 'select count(*) from sgm';
+
+    my $dbh = DBI->connect(
+        "dbi:SQLite:dbname=:memory:", "", "",
+        {
+            RaiseError => 1,
+            sqlite_unicode => 1,
+        }
+    );
+
+    fetch($dbh, $user);
+    execute($dbh, $command);
+
+    $dbh->disconnect();
+}
+
+main;
