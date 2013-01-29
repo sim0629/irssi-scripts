@@ -4,6 +4,8 @@ use HTTP::Request;
 use LWP::UserAgent;
 use Mojo::DOM;
 
+my $CHANNEL = /^#neria$/i;
+
 sub fetch {
     my ($dbh, $user) = @_;
     $user =~ s/^\s+//;
@@ -122,7 +124,7 @@ sub main {
 sub event_privmsg {
     my ($server, $data, $nick, $address) = @_;
     my ($target, $text) = split(/ :/, $data, 2);
-    return if $target !~ /^#neria$/i;
+    return if $target !~ $CHANNEL;
 
     return if $text !~ /\!(((\w+)\,)*((\w+) ))(\s*select.+)$/i;
     my @users = split(/\,/, $1);
