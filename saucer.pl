@@ -87,5 +87,12 @@ if ($response->is_success) {
         }
     }
 }
- 
+
+$select = $dbh->prepare("SELECT COUNT(*) AS RESULT FROM sgm WHERE score >= 1000000");
+$select->execute();
+$select->bind_columns(\$result);
+while($select->fetch()) {
+    print $result;
+}
+
 $dbh->disconnect();
