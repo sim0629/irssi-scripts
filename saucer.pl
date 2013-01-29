@@ -4,6 +4,7 @@ use HTTP::Request;
 use LWP::UserAgent;
 use Mojo::DOM;
 use Time::HiRes;
+use Try::Tiny;
 
 my $CHANNEL = /^#jubeater$/i;
 my $MAX_NUM_OF_ROWS = 5;
@@ -138,16 +139,23 @@ sub event_privmsg {
     my ($target, $text) = split(/ :/, $data, 2);
     return if $target !~ $CHANNEL;
 
-    return if $text !~ /\!(((\w+)\,)*((\w+) ))(\s*select.+)$/i;
-    my @users = split(/\,/, $1);
-    my $command = $+;
+    try {
+        return if $text !~ /\!(((\w+)\,)*((\w+) ))(\s*select.+)$/i;
+        my @users = split(/\,/, $1);
+        my $command = $+;
 
-    my $irssi_callback = sub {
-        my ($message) = @_;
-        $server->command("MSG ${target} ${message}");
-        Time::HiRes::sleep($FLOOD_DELAY);
-    };
-    main(\@users, $command, $irssi_callback);
+        $server->command("MSG ${target} [Loading] ${command}");
+
+        my $irssi_callback = sub {
+            my ($message) = @_;
+            $server->command("MSG ${target} ${message}");
+            Time::HiRes::sleep($FLOOD_DELAY);
+        };
+        main(\@users, $command, $irssi_callback);
+    }catch {
+        $server->command("MSG ${target} [Fail]");
+        # TODO: error message
+    }
 }
 
 Irssi::signal_add("event privmsg", "event_privmsg");
