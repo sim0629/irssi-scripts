@@ -3,8 +3,11 @@ use DBI qw(:sql_types);
 use HTTP::Request;
 use LWP::UserAgent;
 use Mojo::DOM;
+use Time::HiRes;
 
 my $CHANNEL = /^#neria$/i;
+my $MAX_NUM_OF_ROWS = 5;
+my $FLOOD_DELAY = 0.5;
 
 sub fetch {
     my ($dbh, $user) = @_;
@@ -91,12 +94,20 @@ sub fetch {
 }
 
 sub execute {
-    my ($dbh, $command) = @_;
+    my ($dbh, $command, $callback) = @_;
 
     my $select = $dbh->prepare($command);
     $select->execute();
+    my $count = 0;
     while(my (@result) = $select->fetchrow_array()) {
-        return join(', ', @result);
+        $count += 1;
+        if($count <= $MAX_NUM_OF_ROWS) {
+            $callback->(join(', ', @result));
+        }
+    }
+    my $suppressed_count = $count - $MAX_NUM_OF_ROWS;
+    if($suppressed_count > 0) {
+        $callback->("${suppressed_count} more...");
     }
 }
 
@@ -104,6 +115,7 @@ sub main {
     my $users_ref = shift;
     my @users = @$users_ref;
     my $command = shift;
+    my $callback = shift;
 
     my $dbh = DBI->connect(
         "dbi:SQLite:dbname=:memory:", "", "",
@@ -116,7 +128,7 @@ sub main {
     for my $user (@users) {
         fetch($dbh, $user);
     }
-    Irssi::print(execute($dbh, $command));
+    execute($dbh, $command, $callback);
 
     $dbh->disconnect();
 }
@@ -130,7 +142,12 @@ sub event_privmsg {
     my @users = split(/\,/, $1);
     my $command = $+;
 
-    main(\@users, $command);
+    my $irssi_callback = sub {
+        my ($message) = @_;
+        $server->command("MSG ${target} ${message}");
+        Time::HiRes::sleep($FLOOD_DELAY);
+    };
+    main(\@users, $command, $irssi_callback);
 }
 
 Irssi::signal_add("event privmsg", "event_privmsg");
