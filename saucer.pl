@@ -6,6 +6,8 @@ use Mojo::DOM;
 
 sub fetch {
     my ($dbh, $user) = @_;
+    $user =~ s/^\s+//;
+    $user =~ s/\s+$//;
 
     my $safe_user = $dbh->quote_identifier($user);
 
