@@ -5,7 +5,7 @@ use LWP::UserAgent;
 use Mojo::DOM;
 use Time::HiRes;
 
-my $CHANNEL = /^#neria$/i;
+my $CHANNEL = /^#jubeater$/i;
 my $MAX_NUM_OF_ROWS = 5;
 my $FLOOD_DELAY = 0.5;
 
