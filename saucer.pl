@@ -1,3 +1,4 @@
+use Irssi;
 use DBI qw(:sql_types);
 use HTTP::Request;
 use LWP::UserAgent;
@@ -88,17 +89,18 @@ sub fetch {
 sub execute {
     my ($dbh, $command) = @_;
 
-    $select = $dbh->prepare($command);
+    my $select = $dbh->prepare($command);
     $select->execute();
     $select->bind_columns(\$result);
     while($select->fetch()) {
-        print $result;
+        return $result;
     }
 }
 
 sub main {
-    my $user = 'sgm';
-    my $command = 'select count(*) from sgm';
+    my $users_ref = shift;
+    my @users = @$users_ref;
+    my $command = shift;
 
     my $dbh = DBI->connect(
         "dbi:SQLite:dbname=:memory:", "", "",
@@ -108,10 +110,24 @@ sub main {
         }
     );
 
-    fetch($dbh, $user);
-    execute($dbh, $command);
+    for my $user (@users) {
+        fetch($dbh, $user);
+    }
+    Irssi::print(execute($dbh, $command));
 
     $dbh->disconnect();
 }
 
-main;
+sub event_privmsg {
+    my ($server, $data, $nick, $address) = @_;
+    my ($target, $text) = split(/ :/, $data, 2);
+    return if $target !~ /^#neria$/i;
+
+    return if $text !~ /\!(((\w+)\,)*((\w+) ))(select.+)$/i;
+    my @users = split(/\,/, $1);
+    my $command = $+;
+
+    main(\@users, $command);
+}
+
+Irssi::signal_add("event privmsg", "event_privmsg");
