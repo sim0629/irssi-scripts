@@ -18,8 +18,9 @@ sub fetch {
     my $safe_user = $dbh->quote_identifier($user);
 
     $dbh->do("CREATE TABLE ${safe_user} (
-         number INTEGER
+         id INTEGER
         ,name TEXT
+        ,difficulty TEXT
         ,level INTEGER
         ,score INTEGER
         ,fullcombo INTEGER
@@ -28,8 +29,9 @@ sub fetch {
     )");
 
     my $sth = $dbh->prepare("INSERT INTO ${safe_user} (
-         number
+         id
         ,name
+        ,difficulty
         ,level
         ,score
         ,fullcombo
@@ -37,6 +39,7 @@ sub fetch {
         ,delta
     ) VALUES (
          ?
+        ,?
         ,?
         ,?
         ,?
@@ -62,6 +65,7 @@ sub fetch {
 
         my $name = $a_song->text;
 
+        my $difficulty_number = 0;
         for my $difficulty ('bsc', 'adv', 'ext') {
             $td = $tr->at(".${difficulty}");
 
@@ -82,14 +86,17 @@ sub fetch {
             }
 
             $sth->execute(
-                 $number
+                 $number.$difficulty_number
                 ,$name
+                ,$difficulty
                 ,$level
                 ,$score
                 ,$fullcombo
                 ,$rank
                 ,$delta
             );
+
+            $difficulty_number += 1;
         }
     }
 }
