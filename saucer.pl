@@ -140,7 +140,7 @@ sub event_privmsg {
     return if $target !~ $CHANNEL;
 
     try {
-        return if $text !~ /\!(((\w+)\,)*((\w+) ))(\s*select.+)$/i;
+        return if $text !~ /\?(((\w+)\,)*((\w+) ))(\s*select.+)$/i;
         my @users = split(/\,/, $1);
         my $command = $+;
 
