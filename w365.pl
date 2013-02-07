@@ -1,9 +1,9 @@
-#!/usr/bin/perl -CA
+#!/usr/bin/perl
 
-use encoding "utf8";
 use HTTP::Request;
 use LWP::UserAgent;
 use Mojo::DOM;
+use Encode;
 
 sub location_code {
     my $location = shift;
@@ -68,7 +68,8 @@ sub kma {
     my $dom = Mojo::DOM->new;
     $dom->parse($response_string);
     my $result = $dom->at("html > body > table")->all_text;
-    return "[${location}] ${result}";
+    $location = Encode::decode("utf8", $location);
+    return "[".$location."] ".$result;
 }
 
 sub event_privmsg {
