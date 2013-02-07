@@ -6,6 +6,7 @@ use Mojo::DOM;
 
 sub location_code {
     my $location = shift;
+    $location = "서울" unless($location);
     my %code = (
         "서울" => "CA0101",
         "인천" => "CA0104",
