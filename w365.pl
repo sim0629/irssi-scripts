@@ -53,7 +53,7 @@ sub location_code {
     return $code{$location};
 }
 
-sub kma {
+sub main {
     my $location = shift;
     $location = "서울" unless($location);
     my $code = location_code($location);
@@ -77,7 +77,7 @@ sub event_privmsg {
     my ($target, $text) = split(/ :/, $data, 2);
     $target = $nick if($target !~ /^#/);
     return unless($text =~ /날씨\?(\ *([^\ ]+))?/);
-    $server->command("MSG ${target} ".kma($+));
+    $server->command("MSG ${target} ".main($+));
 }
 
 if(caller) {
@@ -85,6 +85,6 @@ if(caller) {
     Irssi::signal_add("event privmsg", "event_privmsg");
 }else {
     binmode(STDOUT, ":utf8");
-    print kma(@ARGV[0]);
+    print main(@ARGV[0]);
     print "\n";
 }
