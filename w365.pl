@@ -53,23 +53,29 @@ sub location_code {
     return $code{$location};
 }
 
-sub main {
+sub w365 {
     my $location = shift;
-    $location = "서울" unless($location);
     my $code = location_code($location);
-    return "미지원" unless($code);
+    return "none" unless($code);
     my $request = HTTP::Request->new(GET => "http://www.w365.com/korea/kor/w365_iframe_real.html?code=${code}");
     my $ua = LWP::UserAgent->new;
     $ua->agent("Mozilla/5.0");
     my $response = $ua->request($request);
-    return "실패" unless($response->is_success);
+    return "fail" unless($response->is_success);
     my $response_string = $response->decoded_content;
     $response_string =~ s/&nbsp;/ /g;
     my $dom = Mojo::DOM->new;
     $dom->parse($response_string);
     my $result = $dom->at("html > body > table")->all_text;
+    return $result;
+}
+
+sub main {
+    my $location = shift;
+    $location = "서울" unless($location);
+    my $result = w365($location);
     $location = Encode::decode("utf8", $location);
-    return "[".$location."] ".$result;
+    return "[${location}] ${result}";
 }
 
 sub event_privmsg {
