@@ -4,7 +4,6 @@ use encoding "utf8";
 use HTTP::Request;
 use LWP::UserAgent;
 use Mojo::DOM;
-use Text::Iconv;
 
 sub location_code {
     my $location = shift;
