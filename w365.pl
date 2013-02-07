@@ -1,12 +1,13 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -CA
 
+use encoding "utf8";
 use HTTP::Request;
 use LWP::UserAgent;
 use Mojo::DOM;
+use Text::Iconv;
 
 sub location_code {
     my $location = shift;
-    $location = "서울" unless($location);
     my %code = (
         "서울" => "CA0101",
         "인천" => "CA0104",
@@ -55,6 +56,7 @@ sub location_code {
 
 sub kma {
     my $location = shift;
+    $location = "서울" unless($location);
     my $code = location_code($location);
     return "미지원" unless($code);
     my $request = HTTP::Request->new(GET => "http://www.w365.com/korea/kor/w365_iframe_real.html?code=${code}");
@@ -63,9 +65,11 @@ sub kma {
     my $response = $ua->request($request);
     return "실패" unless($response->is_success);
     my $response_string = $response->decoded_content;
+    $response_string =~ s/&nbsp;/ /g;
     my $dom = Mojo::DOM->new;
     $dom->parse($response_string);
-    return $dom->at("html > body > table")->all_text;
+    my $result = $dom->at("html > body > table")->all_text;
+    return "[${location}] ${result}";
 }
 
 sub event_privmsg {
@@ -73,7 +77,7 @@ sub event_privmsg {
     my ($target, $text) = split(/ :/, $data, 2);
     $target = $nick if($target !~ /^#/);
     return unless($text =~ /날씨\?(\ *([^\ ]+))?/);
-    $server->command("MSG ${target} [${location}] ".kma($+));
+    $server->command("MSG ${target} ".kma($+));
 }
 
 if(caller) {
