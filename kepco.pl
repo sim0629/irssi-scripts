@@ -21,8 +21,10 @@ sub event_privmsg {
     my ($server, $data, $nick, $address) = @_;
     my ($target, $text) = split(/ :/, $data, 2);
     $target = $nick if($target !~ /^#/);
-    my $test = "MSG $target ".kepco.".";
-    $server->command($test) if ($text =~ /전력량\?/);
+    if($text =~ /전력량\?/) {
+        my $test = "MSG $target ".kepco.".";
+        $server->command($test);
+    }
 }
 
 Irssi::signal_add("event privmsg", "event_privmsg");
