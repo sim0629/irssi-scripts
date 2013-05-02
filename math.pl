@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 use Math::Expression::Evaluator;
+use Try::Tiny;
 
 sub trim {
     my $string = shift;
@@ -12,8 +13,12 @@ sub trim {
 sub math {
     my $plain = shift;
     my $evaluator = Math::Expression::Evaluator->new;
-    my $result = $evaluator->parse($plain)->val();
-    return $result;
+    try {
+        my $result = $evaluator->parse($plain)->val();
+        return $result;
+    }catch {
+        return "Fail";
+    }
 }
 
 sub main {
