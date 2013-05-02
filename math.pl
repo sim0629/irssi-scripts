@@ -2,6 +2,13 @@
 
 use Math::Expression::Evaluator;
 
+sub trim {
+    my $string = shift;
+    $string =~ s/^\s+//;
+    $string =~ s/\s+$//;
+    return $string;
+}
+
 sub math {
     my $plain = shift;
     my $evaluator = Math::Expression::Evaluator->new;
@@ -11,6 +18,7 @@ sub math {
 
 sub main {
     my $plain = shift;
+    $plain = trim($plain);
     my $result = math($plain);
     return "[${plain}] ${result}";
 }
