@@ -66,7 +66,9 @@ sub w365 {
     $response_string =~ s/&nbsp;/ /g;
     my $dom = Mojo::DOM->new;
     $dom->parse($response_string);
-    my $result = $dom->at("html > body > table")->all_text;
+    my $table = $dom->at("html > body > table");
+    return "fail" unless($table);
+    my $result = $table->all_text;
     return $result;
 }
 
