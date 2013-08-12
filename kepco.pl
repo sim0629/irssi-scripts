@@ -1,5 +1,5 @@
-use Irssi;
-use Irssi::Irc;
+#!/usr/bin/perl
+
 use HTTP::Request;
 use LWP::UserAgent;
 
@@ -27,4 +27,11 @@ sub event_privmsg {
     }
 }
 
-Irssi::signal_add("event privmsg", "event_privmsg");
+if(caller) {
+    require Irssi;
+    Irssi::signal_add("event privmsg", "event_privmsg");
+}else {
+    binmode(STDOUT, ":utf8");
+    print kepco;
+    print "\n";
+}
