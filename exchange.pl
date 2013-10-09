@@ -59,15 +59,23 @@ sub exchange {
 sub main {
     my $text = shift;
     $text = Encode::decode("utf8", $text);
-    my $result = exchange($text);
-    return "[${text}] ${result}";
+    if($text =~ /^\s*(\d+(\.\d*)?)?\s*(\S+)\s*$/) {
+        my $amount = 1;
+        $amount = $1 if($1);
+        $text = $3;
+        my $result = exchange($text);
+        $result *= $amount if($result ne "not found");
+        return "[${amount} ${text}] ${result}";
+    }else {
+        return "[${text}] what the fox say";
+    }
 }
 
 sub event_privmsg {
     my ($server, $data, $nick, $address) = @_;
     my ($target, $text) = split(/ :/, $data, 2);
     $target = $nick if($target !~ /^#/);
-    return unless($text =~ /환율\?\s*(\S+)/);
+    return unless($text =~ /환율\?\s*(.+)/);
     $server->command("MSG ${target} ".main($+));
 }
 
