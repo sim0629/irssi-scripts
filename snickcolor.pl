@@ -12,7 +12,6 @@ sub simple_hash {
     foreach my $char (@chars) {
         $counter += ord $char;
     }
-    
     my $len = @colors;
     $counter = $colors[$counter % $len];
     return $counter;
