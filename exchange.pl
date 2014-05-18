@@ -21,7 +21,7 @@ sub exchange {
     my $dom = Mojo::DOM->new;
     $dom->parse($response_string);
 
-    my $result = $dom->at("div#daumContent > script:nth-child(2)")->all_text;
+    my $result = $dom->at("main#daumContent script:nth-child(2)")->all_text;
 
     my @ex_matches = ($result =~ m/\bex\b\[\d+\]\s*=\s*['"].+?['"]/g);
     foreach my $ex (@ex_matches) {
