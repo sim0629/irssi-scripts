@@ -15,7 +15,7 @@ sub menu {
   $dom->parse($response_string);
   my $m301 = $dom->at("div#main > table > tr:nth-child(3)")->all_text;
   my $m302 = $dom->at("div#main > table > tr:nth-child(4)")->all_text;
-  return $m301."\n".$m302;
+  return $m302."\n".$m301;
 }
 
 sub event_privmsg {
